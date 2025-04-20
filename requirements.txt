@@ -4,3 +4,6 @@ python-multipart
 opencv-python
 pillow
 numpy
+torch
+torchvision
+timm

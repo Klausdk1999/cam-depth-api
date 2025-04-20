@@ -49,6 +49,5 @@ The server will be running at `http://localhost:8000/upload`.
 You can use `curl` to send a test image to the server:
 
 ```bash
-curl -X POST "http://localhost:8000/upload" \
-  -F "file=@path/to/image.jpg"
+curl -X POST "http://localhost:8000/upload" -F "file=@path/to/image.jpg"
   ```
