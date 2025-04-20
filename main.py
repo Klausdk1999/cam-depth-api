@@ -48,3 +48,35 @@ async def upload_image(file: UploadFile = File(...)):
         "depth_max": float(depth_map.max()),
         "depth_mean": float(depth_map.mean()),
     })
+
+@app.post("/center-depth")
+async def center_depth(file: UploadFile = File(...)):
+    contents = await file.read()
+
+    image = Image.open(io.BytesIO(contents)).convert("RGB")
+    img_input = transform(image).unsqueeze(0)
+
+    with torch.no_grad():
+        prediction = midas(img_input)
+        prediction = torch.nn.functional.interpolate(
+            prediction.unsqueeze(1),
+            size=image.size[::-1],
+            mode="bicubic",
+            align_corners=False,
+        ).squeeze()
+
+    depth_map = prediction.cpu().numpy()
+
+    height, width = depth_map.shape
+    cx, cy = width // 2, height // 2
+
+    # Get the central 3x3 region
+    region = depth_map[cy-1:cy+2, cx-1:cx+2]
+    center_depth = float(np.mean(region))
+
+    return JSONResponse({
+        "center_x": cx,
+        "center_y": cy,
+        "depth_center_mean_3x3": center_depth,
+    })
+
